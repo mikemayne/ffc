@@ -1,0 +1,3 @@
+[submodule "frd"]
+	path = frd
+	url = https://github.com/mikemayne/frd

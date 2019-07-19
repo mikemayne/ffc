@@ -1,0 +1,6 @@
+googletest/
+archive/
+.vscode/ipch/
+/*.o
+/*.a
+/ffc_test

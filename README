@@ -1,0 +1,16 @@
+-std=c++11
+
+# setup #
+
+- get frd:
+
+git clone https://github.com/mikemayne/frd.git
+
+- get gtest:
+
+git clone https://github.com/google/googletest.git
+
+- get archive:
+
+git clone https://github.com/voidah/archive.git
+

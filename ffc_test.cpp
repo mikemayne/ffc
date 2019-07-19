@@ -266,28 +266,4 @@ namespace {
         EXPECT_TRUE(spl_result.size() == r.size());
         for (size_t i=0; i<spl_result.size(); ++i) EXPECT_EQ(spl_result[i], ffc::convertMagtoSpl(r[i]));
     }
-
-
-
-
-    // TEST(LineArrayTest, setup_linearray) {
-    //     std::vector<float> splayAngles = {0.f, 5.f,};
-    //     auto height = 0.1f;
-    //     auto depth = 0.25f;
-        
-    //     ffc::Polar<float> p;
-
-    //     std::vector<ffc::Element<float>> lineArray = {{p, height, depth, splayAngles}, {p, height, depth, splayAngles}, {p, height, depth, splayAngles}};
-    //     ffc::setup_linearray({0.f, 0.f}, 0.f, lineArray, true);
-
-    //     auto cmp = [](std::pair<float, float> a, std::pair<float, float> b) {
-    //         return (a.first*a.first - b.first*b.first) < 0.01
-    //             && (a.second*a.second - b.second*b.second) < 0.01;
-    //     };
-
-    //     EXPECT_TRUE(cmp(lineArray[0].topRiggingXY, {0.f, 0.f}));
-    //     Next:
-    //     - test the other elements
-    //     - draw a picture for the docs
-    // }
 }

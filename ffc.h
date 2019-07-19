@@ -156,34 +156,6 @@ template<typename FloatType>
 FloatType degreesToRadians(FloatType degrees) { 
     return degrees * M_PI / (FloatType)180;
 }
-// setup_linearray          set the angles and acoustic centres for a vector of elements
-// xy                   the point to hang the array.
-// arrayAimAngle      the initial splay angle of the array
-// lineArray            the vector of elements representing the array
-template<typename FloatType>
-void setup_linearray(std::pair<FloatType, FloatType> xy, FloatType arrayAimAngle, std::vector<Element<FloatType>>& lineArray, bool flown)
-{
-    auto angleAccumulator = arrayAimAngle; 
-    auto hangPoint = xy;
-    auto isFlown = flown ? static_cast<FloatType>(-1) : static_cast<FloatType>(1);
-
-    for (auto& element : lineArray) 
-	{
-		angleAccumulator += element.splayAngle;
-		element.source.angle = angleAccumulator;
-
-		auto h = element.height;
-        auto dx = isFlown * h * sin (degreesToRadians (angleAccumulator));
-        auto dy = isFlown * h * cos (degreesToRadians (angleAccumulator));
-
-		element.topRiggingXY = hangPoint;
-		element.source.acousticCentre = {hangPoint.first + dx/2., hangPoint.second + dy/2.};
-
-    	hangPoint.first += dx;
-    	hangPoint.second += dy;
-    	element.bottomRiggingXY = hangPoint;
-    }
-}
 
 template<typename FloatType>
 struct FreeFieldCalculator

@@ -26,31 +26,13 @@ struct Constants
     FloatType speed_of_sound_mps;
     int width_px;
     int height_px;
-    std::pair<FloatType, FloatType> XYM;
+    std::pair<FloatType, FloatType> XYM; // origin in M (bad member name!)
 };
 
 // Polar holds magnitude and phase in RADIANS for a single frequency.  
 // Its used in the calculators critical path
 template<typename FloatType>
 using Polar = std::vector<std::pair<FloatType, FloatType>>;
-
-template<typename FloatType>
-struct Source
-{
-    Source(Polar<FloatType> const& polar)
-    : acousticCentre({0.f, 0.f}), polar(polar), polarity(1), angle(0)
-    { }
-
-    std::pair<FloatType, FloatType> acousticCentre;
-
-    void reversePolarity()
-    {
-        polarity = -1;
-    }
-    Polar<FloatType> const& polar;
-    FloatType polarity;
-    FloatType angle;
-};
 
 template<typename FloatType>
 FloatType constrainAngle (FloatType x) {
@@ -66,12 +48,14 @@ Polar<FloatType> make_polar(frd::PolarData<FloatType> polarData, FloatType frequ
     auto toRadians = M_PI / 180.0;
     Polar<FloatType> polar(polarData.size());
     for (auto frdList : polarData) {
-        if (auto value = findFreq(frdList, frequencyHz) != frdList.end()) {
+        auto value = findFreq(frdList, frequencyHz);
+        if (value != frdList.end()) {
             polar.push_back(std::make_pair(value->dBSPL, value->phaseDeg * toRadians));
         } else {
             throw std::runtime_error("Couldn't find frequency " + std::to_string(frequencyHz));
         }
     }
+    return polar;
 }
 
 template<typename FloatType>
@@ -128,23 +112,59 @@ std::vector<FloatType> convert_to_spl(std::vector<std::complex<FloatType>> const
     return spl;
 }
 
+// SoundSource is the acoustic model used by the calculator
 template<typename FloatType>
-struct Element
+struct SoundSource
 {
-    Element(Polar<FloatType> const& polar, FloatType height, FloatType depth, std::vector<FloatType> validSplayAngles)
-    : source({polar}), splayAngle(FloatType(0)), splayInverted (false),
-    height(height), depth(depth), validSplayAngles(validSplayAngles)
+    SoundSource(Polar<FloatType> const& polar)
+    : acousticCentre({0.f, 0.f}), polar(polar), polarity(1), angle(0)
+    { }
+
+    std::pair<FloatType, FloatType> acousticCentre;
+
+    void reversePolarity()
+    {
+        polarity = -1;
+    }
+    Polar<FloatType> const& polar;
+    FloatType polarity;
+    FloatType angle;
+};
+
+// ElementType defines a loudspeaker sku
+template<typename FloatType>
+struct ElementType
+{
+    ElementType(Polar<FloatType> const& polar, FloatType height, FloatType depth, std::vector<FloatType> validSplayAngles) : 
+        polar(polar),
+        height(height), 
+        depth(depth), 
+        validSplayAngles(validSplayAngles)
+    { }
+
+    Polar<FloatType> const& polar;
+    const FloatType height;
+    const FloatType depth;
+    const std::vector<FloatType> validSplayAngles;
+};
+
+// ElementState models the state of rigging hardware etc
+template<typename FloatType>
+struct ElementState
+{
+    ElementState(ElementType<FloatType> const& model) : 
+        splayAngle(FloatType(0)), 
+        splayInverted(false),
+        source({model.polar}),
+        model(model)
     { }
 
     FloatType splayAngle;
     std::pair<FloatType, FloatType> topRiggingXY;
     std::pair<FloatType, FloatType> bottomRiggingXY;
     bool splayInverted;
-
-    const FloatType height;
-    const FloatType depth;
-    const std::vector<FloatType> validSplayAngles;
-    Source<FloatType> source; 
+    SoundSource<FloatType> source;
+    ElementType<FloatType> &model;
 };
 
 template <typename FloatType>                                                   
@@ -160,7 +180,7 @@ FloatType degreesToRadians(FloatType degrees) {
 template<typename FloatType>
 struct FreeFieldCalculator
 {
-    FreeFieldCalculator (int numThreads, std::vector<Source<FloatType>> const& sources, Constants<FloatType> const& constants) 
+    FreeFieldCalculator (int numThreads, std::vector<SoundSource<FloatType>> const& sources, Constants<FloatType> const& constants) 
     : stop (false)
     , numThreads(numThreads)
     , sources (sources)
@@ -203,7 +223,7 @@ struct FreeFieldCalculator
                 if (threadPool[i].joinable())
                     threadPool[i].join();
             } catch (std::exception const& e) {
-                std::cerr << "exception " << e.what() << " occurred joining thread " << i << std::endl;
+//                std::cerr << "exception " << e.what() << " occurred joining thread " << i << std::endl;
             }
             
         }
@@ -230,7 +250,7 @@ private:
 
     std::atomic<bool> stop;
     int numThreads;
-    std::vector<Source<FloatType>> const& sources;
+    std::vector<SoundSource<FloatType>> const& sources;
     Constants<FloatType> const& constants;
 };
 

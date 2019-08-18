@@ -59,6 +59,16 @@ Polar<FloatType> make_polar(frd::PolarData<FloatType> polarData, FloatType frequ
 }
 
 template<typename FloatType>
+Polar<FloatType> make_mirrored_polar(frd::PolarData<FloatType> polarData, FloatType frequencyHz)
+{
+    Polar<FloatType> polar = make_polar(polarData, frequencyHz);
+    polar.reserve (2*polar.size());
+    Polar<FloatType> reverse {polar.rbegin()+1, polar.rend()-1};
+    polar.insert(polar.end(), reverse.begin(), reverse.end());
+    return polar;
+}
+
+template<typename FloatType>
 std::pair<FloatType, FloatType> interpolated(Polar<FloatType> const& p, FloatType rads)
 {
     rads += M_PI;

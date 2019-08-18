@@ -15,6 +15,9 @@ namespace {
 
         EXPECT_NEAR(value.first, 10.f, 0.01f);
         EXPECT_NEAR(value.second, 0.f, 0.01f);
+
+        auto mirror = ffc::make_mirrored_polar(testPolarData, 2.f);
+        EXPECT_EQ(2*(polar.size()-1), mirror.size());
     }
 
     TEST(ModelTest, Polar) {

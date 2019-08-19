@@ -43,14 +43,17 @@ FloatType constrainAngle (FloatType x) {
 }
 
 template<typename FloatType>
-Polar<FloatType> make_polar(frd::PolarData<FloatType> polarData, FloatType frequencyHz)
+Polar<FloatType> make_polar(frd::PolarData<FloatType> const& polarData, FloatType frequencyHz)
 {
     auto toRadians = M_PI / 180.0;
-    Polar<FloatType> polar(polarData.size());
+
+    Polar<FloatType> polar;
+    polar.reserve(polarData.size());
     for (auto frdList : polarData) {
         auto value = findFreq(frdList, frequencyHz);
         if (value != frdList.end()) {
-            polar.push_back(std::make_pair(value->dBSPL, value->phaseDeg * toRadians));
+            auto valueToInsert = std::make_pair(value->dBSPL, value->phaseDeg * toRadians);
+            polar.push_back(valueToInsert);
         } else {
             throw std::runtime_error("Couldn't find frequency " + std::to_string(frequencyHz));
         }
@@ -59,9 +62,9 @@ Polar<FloatType> make_polar(frd::PolarData<FloatType> polarData, FloatType frequ
 }
 
 template<typename FloatType>
-Polar<FloatType> make_mirrored_polar(frd::PolarData<FloatType> polarData, FloatType frequencyHz)
+Polar<FloatType> make_mirrored_polar(frd::PolarData<FloatType> const& polarData, FloatType frequencyHz)
 {
-    Polar<FloatType> polar = make_polar(polarData, frequencyHz);
+    Polar<FloatType> polar = make_polar<FloatType>(polarData, frequencyHz);
     polar.reserve (2*polar.size());
     Polar<FloatType> reverse {polar.rbegin()+1, polar.rend()-1};
     polar.insert(polar.end(), reverse.begin(), reverse.end());

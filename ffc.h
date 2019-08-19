@@ -129,7 +129,7 @@ std::vector<FloatType> convert_to_spl(std::vector<std::complex<FloatType>> const
 template<typename FloatType>
 struct SoundSource
 {
-    SoundSource(Polar<FloatType> const& polar)
+    SoundSource(Polar<FloatType> const* polar)
     : acousticCentre({0.f, 0.f}), polar(polar), polarity(1), angle(0)
     { }
 
@@ -139,7 +139,7 @@ struct SoundSource
     {
         polarity = -1;
     }
-    Polar<FloatType> const& polar;
+    Polar<FloatType> const* polar;
     FloatType polarity;
     FloatType angle;
 };
@@ -253,7 +253,7 @@ private:
             for (auto pt = startOfRange; pt != endOfRange && !stop; ++pt) {
                 auto xym = index_to_xym(std::distance(start, pt), constants);
                 auto [attenuation_dB, wt, angle_rads] = calc_intermediate(s.acousticCentre, xym, constants);
-                auto spl_phase = interpolated(s.polar, angle_rads + s.angle);
+                auto spl_phase = interpolated(*s.polar, angle_rads + s.angle);
                 auto mag = convertSplToMag(spl_phase.first - attenuation_dB);
                 auto phase = spl_phase.second + wt;
                 *pt = *pt + std::polar(mag, phase) * s.polarity;

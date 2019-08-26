@@ -59,7 +59,7 @@ namespace {
         p.push_back({98.f, 0.f});
 
         ffc::SoundSource<float> s = ffc::SoundSource<float>(&p);
-        std::vector<ffc::SoundSource<float>> sources = {s};
+        std::vector<ffc::SoundSource<float>*> sources = {&s};
         ffc::FreeFieldCalculator<float> calc(1, sources, c);
         ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px); 
         calc.calculate(result);
@@ -107,7 +107,7 @@ namespace {
         ffc::SoundSource<float> s1 = ffc::SoundSource<float>(&p);
 
         {
-        std::vector<ffc::SoundSource<float>> sources = {s1};
+        std::vector<ffc::SoundSource<float>*> sources = {&s1};
         ffc::FreeFieldCalculator<float> calc(1, sources, c);
         ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
         calc.calculate(result);
@@ -119,7 +119,7 @@ namespace {
 
         ffc::SoundSource<float> s2 = ffc::SoundSource<float>(&p);
         s2.acousticCentre = {4.f, 0.f};
-        std::vector<ffc::SoundSource<float>> sources = {s1, s2};
+        std::vector<ffc::SoundSource<float>*> sources = {&s1, &s2};
         ffc::FreeFieldCalculator<float> calc(1, sources, c);
         ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
         calc.calculate(result);
@@ -140,7 +140,7 @@ namespace {
         p.push_back({98.f, 0.f});
         ffc::SoundSource<float> s1 = ffc::SoundSource<float>(&p);
 
-        std::vector<ffc::SoundSource<float>> sources1 = {s1};
+        std::vector<ffc::SoundSource<float>*> sources1 = {&s1};
         ffc::FreeFieldCalculator<float> calc1(2, sources1, c);
         ffc::FreeFieldCalculator<float>::Result result1(c.height_px * c.width_px);
         calc1.calculate(result1);
@@ -152,7 +152,7 @@ namespace {
         s2.acousticCentre = {4.f, 0.f};
         s2.reversePolarity();
 
-        std::vector<ffc::SoundSource<float>> sources2 = {s2};
+        std::vector<ffc::SoundSource<float>*> sources2 = {&s2};
         ffc::FreeFieldCalculator<float> calc2(3, sources2, c);
         ffc::FreeFieldCalculator<float>::Result result2(c.height_px * c.width_px);
         calc2.calculate(result2);
@@ -168,7 +168,7 @@ namespace {
         EXPECT_EQ(result1.size(), result2.size());
         EXPECT_EQ(result1.size(), c.width_px);
 
-        std::vector<ffc::SoundSource<float>> sources3 = {s1, s2};
+        std::vector<ffc::SoundSource<float>*> sources3 = {&s1, &s2};
         ffc::FreeFieldCalculator<float> calc3(4, sources3, c);
         ffc::FreeFieldCalculator<float>::Result result3(c.height_px * c.width_px);
         calc3.calculate(result2);
@@ -193,7 +193,7 @@ namespace {
         ffc::SoundSource<float> s = ffc::SoundSource<float>(&p);
         s.acousticCentre = {1.f, 1.f};
         {
-        std::vector<ffc::SoundSource<float>> sources = {s};
+        std::vector<ffc::SoundSource<float>*> sources = {&s};
         ffc::FreeFieldCalculator<float> calc(4, sources, c);
         ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
         calc.calculate(result);
@@ -208,7 +208,7 @@ namespace {
 
         s.angle = M_PI / 2.f;
         {
-            std::vector<ffc::SoundSource<float>> sources = {s};
+            std::vector<ffc::SoundSource<float>*> sources = {&s};
             ffc::FreeFieldCalculator<float> calc(4, sources, c);
             ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
             calc.calculate(result);
@@ -218,7 +218,7 @@ namespace {
 
         s.angle = M_PI;
         {
-            std::vector<ffc::SoundSource<float>> sources = {s};
+            std::vector<ffc::SoundSource<float>*> sources = {&s};
             ffc::FreeFieldCalculator<float> calc(4, sources, c);
             ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
             calc.calculate(result);
@@ -227,7 +227,7 @@ namespace {
         }
         s.angle = 3.f*M_PI / 2.f;
         {
-            std::vector<ffc::SoundSource<float>> sources = {s};
+            std::vector<ffc::SoundSource<float>*> sources = {&s};
             ffc::FreeFieldCalculator<float> calc(4, sources, c);
             ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
             calc.calculate(result);
@@ -252,7 +252,7 @@ namespace {
         ffc::SoundSource<float> s = ffc::SoundSource<float>(&p);
         s.acousticCentre = {0,0};
 
-        std::vector<ffc::SoundSource<float>> sources = {s};
+        std::vector<ffc::SoundSource<float>*> sources = {&s};
         ffc::FreeFieldCalculator<float> calc(10, sources, c);
         ffc::FreeFieldCalculator<float>::Result r(c.height_px * c.width_px);
         calc.calculate(r);
@@ -275,7 +275,7 @@ namespace {
         p.push_back({98.f, 0.f});
         ffc::SoundSource<float> s = ffc::SoundSource<float>(&p);
 
-        std::vector<ffc::SoundSource<float>> sources = {s};
+        std::vector<ffc::SoundSource<float>*> sources = {&s};
         ffc::FreeFieldCalculator<float> calc(10, sources, c);
         ffc::FreeFieldCalculator<float>::Result r(c.height_px * c.width_px);
         calc.calculate(r);

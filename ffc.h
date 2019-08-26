@@ -193,7 +193,7 @@ FloatType degreesToRadians(FloatType degrees) {
 template<typename FloatType>
 struct FreeFieldCalculator
 {
-    FreeFieldCalculator (int numThreads, std::vector<SoundSource<FloatType>> const& sources, Constants<FloatType> const& constants) 
+    FreeFieldCalculator (int numThreads, std::vector<SoundSource<FloatType>*> const& sources, Constants<FloatType> const& constants) 
     : stop (false)
     , numThreads(numThreads)
     , sources (sources)
@@ -250,20 +250,21 @@ private:
     void calculateInThread(typename Result::iterator start, typename Result::iterator startOfRange, typename Result::iterator endOfRange)
     {
         for (const auto& s : sources) {
+            if (!s) continue;
             for (auto pt = startOfRange; pt != endOfRange && !stop; ++pt) {
                 auto xym = index_to_xym(std::distance(start, pt), constants);
-                auto [attenuation_dB, wt, angle_rads] = calc_intermediate(s.acousticCentre, xym, constants);
-                auto spl_phase = interpolated(*s.polar, angle_rads + s.angle);
+                auto [attenuation_dB, wt, angle_rads] = calc_intermediate(s->acousticCentre, xym, constants);
+                auto spl_phase = interpolated(*s->polar, angle_rads + s->angle);
                 auto mag = convertSplToMag(spl_phase.first - attenuation_dB);
                 auto phase = spl_phase.second + wt;
-                *pt = *pt + std::polar(mag, phase) * s.polarity;
+                *pt = *pt + std::polar(mag, phase) * s->polarity;
             }
         }
     }
 
     std::atomic<bool> stop;
     int numThreads;
-    std::vector<SoundSource<FloatType>> const& sources;
+    std::vector<SoundSource<FloatType>*> const& sources;
     Constants<FloatType> const& constants;
 };
 

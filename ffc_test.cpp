@@ -58,8 +58,8 @@ namespace {
         auto spl = 98.f;
         p.push_back({98.f, 0.f});
 
-        ffc::SoundSource<float> s = ffc::SoundSource<float>(&p);
-        std::vector<ffc::SoundSource<float>*> sources = {&s};
+        ffc::SoundSource<float> s = ffc::SoundSource<float>::create({0.f, 0.f}, &p, 0.f);
+        std::vector<ffc::SoundSource<float>> sources = {s};
         ffc::FreeFieldCalculator<float> calc(1, sources, c);
         ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px); 
         calc.calculate(result);
@@ -104,10 +104,10 @@ namespace {
         ffc::Polar<float> p;
         auto spl = 98.f;
         p.push_back({98.f, 0.f});
-        ffc::SoundSource<float> s1 = ffc::SoundSource<float>(&p);
+        ffc::SoundSource<float> s1 = ffc::SoundSource<float>::create({0.f, 0.f}, &p, 0.f);
 
         {
-        std::vector<ffc::SoundSource<float>*> sources = {&s1};
+        std::vector<ffc::SoundSource<float>> sources = {s1};
         ffc::FreeFieldCalculator<float> calc(1, sources, c);
         ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
         calc.calculate(result);
@@ -116,10 +116,8 @@ namespace {
         EXPECT_NEAR(spl-6.02, ffc::convertMagtoSpl(result[2]), 0.1f);
         }
 
-
-        ffc::SoundSource<float> s2 = ffc::SoundSource<float>(&p);
-        s2.acousticCentre = {4.f, 0.f};
-        std::vector<ffc::SoundSource<float>*> sources = {&s1, &s2};
+        ffc::SoundSource<float> s2 = ffc::SoundSource<float>::create({4.f, 0.f}, &p, 0.f);
+        std::vector<ffc::SoundSource<float>> sources = {s1, s2};
         ffc::FreeFieldCalculator<float> calc(1, sources, c);
         ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
         calc.calculate(result);
@@ -138,9 +136,9 @@ namespace {
         ffc::Polar<float> p;
         auto spl = 98.f;
         p.push_back({98.f, 0.f});
-        ffc::SoundSource<float> s1 = ffc::SoundSource<float>(&p);
+        ffc::SoundSource<float> s1 = ffc::SoundSource<float>::create({0.f, 0.f}, &p, 0.f);
 
-        std::vector<ffc::SoundSource<float>*> sources1 = {&s1};
+        std::vector<ffc::SoundSource<float>> sources1 = {s1};
         ffc::FreeFieldCalculator<float> calc1(2, sources1, c);
         ffc::FreeFieldCalculator<float>::Result result1(c.height_px * c.width_px);
         calc1.calculate(result1);
@@ -148,11 +146,9 @@ namespace {
         EXPECT_NEAR(spl, ffc::convertMagtoSpl(result1[1]), 0.1f);
         EXPECT_NEAR(spl-6.02, ffc::convertMagtoSpl(result1[2]), 0.1f);
 
-        ffc::SoundSource<float> s2 = ffc::SoundSource<float>(&p);
-        s2.acousticCentre = {4.f, 0.f};
-        s2.reversePolarity();
+        ffc::SoundSource<float> s2 = ffc::SoundSource<float>::createReversePolarity({4.f, 0.f}, &p, 0.f);
 
-        std::vector<ffc::SoundSource<float>*> sources2 = {&s2};
+        std::vector<ffc::SoundSource<float>> sources2 = {s2};
         ffc::FreeFieldCalculator<float> calc2(3, sources2, c);
         ffc::FreeFieldCalculator<float>::Result result2(c.height_px * c.width_px);
         calc2.calculate(result2);
@@ -168,7 +164,7 @@ namespace {
         EXPECT_EQ(result1.size(), result2.size());
         EXPECT_EQ(result1.size(), c.width_px);
 
-        std::vector<ffc::SoundSource<float>*> sources3 = {&s1, &s2};
+        std::vector<ffc::SoundSource<float>> sources3 = {s1, s2};
         ffc::FreeFieldCalculator<float> calc3(4, sources3, c);
         ffc::FreeFieldCalculator<float>::Result result3(c.height_px * c.width_px);
         calc3.calculate(result2);
@@ -190,10 +186,9 @@ namespace {
         p.push_back({spl, 0.f});
         for (int i=0; i<35; ++i) p.push_back({1.f, 0.f});
 
-        ffc::SoundSource<float> s = ffc::SoundSource<float>(&p);
-        s.acousticCentre = {1.f, 1.f};
+        auto s = ffc::SoundSource<float>::create({1.f, 1.f}, &p, 0.f);
         {
-        std::vector<ffc::SoundSource<float>*> sources = {&s};
+        std::vector<ffc::SoundSource<float>> sources = {s};
         ffc::FreeFieldCalculator<float> calc(4, sources, c);
         ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
         calc.calculate(result);
@@ -205,29 +200,27 @@ namespace {
         EXPECT_NEAR(abs(result[2]), abs(result[8]), 1.f); // this is magnitude not dB so 1.f is negligible
         EXPECT_TRUE(result[3] != result[5]);
         }
-
-        s.angle = M_PI / 2.f;
+        auto s_pi_2 = ffc::SoundSource<float>::create({1.f, 1.f}, &p, M_PI / 2.f);
         {
-            std::vector<ffc::SoundSource<float>*> sources = {&s};
+            std::vector<ffc::SoundSource<float>> sources = {s_pi_2};
             ffc::FreeFieldCalculator<float> calc(4, sources, c);
             ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
             calc.calculate(result);
 
             EXPECT_NEAR(spl, ffc::convertMagtoSpl(result[1]), 0.1f);
         }
-
-        s.angle = M_PI;
+        auto s_pi = ffc::SoundSource<float>::create({1.f, 1.f}, &p, M_PI);
         {
-            std::vector<ffc::SoundSource<float>*> sources = {&s};
+            std::vector<ffc::SoundSource<float>> sources = {s_pi};
             ffc::FreeFieldCalculator<float> calc(4, sources, c);
             ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
             calc.calculate(result);
             EXPECT_NEAR(spl, ffc::convertMagtoSpl(result[3]), 0.1f);
 
         }
-        s.angle = 3.f*M_PI / 2.f;
+        auto s_3_pi_2 = ffc::SoundSource<float>::create({1.f, 1.f}, &p, 3.f*M_PI / 2.f);
         {
-            std::vector<ffc::SoundSource<float>*> sources = {&s};
+            std::vector<ffc::SoundSource<float>> sources = {s_3_pi_2};
             ffc::FreeFieldCalculator<float> calc(4, sources, c);
             ffc::FreeFieldCalculator<float>::Result result(c.height_px * c.width_px);
             calc.calculate(result);
@@ -249,10 +242,9 @@ namespace {
         auto spl = 98.f;
         p.push_back({98.f, 0.f});
         
-        ffc::SoundSource<float> s = ffc::SoundSource<float>(&p);
-        s.acousticCentre = {0,0};
+        ffc::SoundSource<float> s = ffc::SoundSource<float>::create({0.f, 0.f}, &p, 0.f);
 
-        std::vector<ffc::SoundSource<float>*> sources = {&s};
+        std::vector<ffc::SoundSource<float>> sources = {s};
         ffc::FreeFieldCalculator<float> calc(10, sources, c);
         ffc::FreeFieldCalculator<float>::Result r(c.height_px * c.width_px);
         calc.calculate(r);
@@ -273,9 +265,9 @@ namespace {
         ffc::Polar<float> p;
         auto spl = 98.f;
         p.push_back({98.f, 0.f});
-        ffc::SoundSource<float> s = ffc::SoundSource<float>(&p);
+        ffc::SoundSource<float> s = ffc::SoundSource<float>::create({0.f, 0.f}, &p, 0.f);
 
-        std::vector<ffc::SoundSource<float>*> sources = {&s};
+        std::vector<ffc::SoundSource<float>> sources = {s};
         ffc::FreeFieldCalculator<float> calc(10, sources, c);
         ffc::FreeFieldCalculator<float>::Result r(c.height_px * c.width_px);
         calc.calculate(r);

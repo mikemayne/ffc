@@ -50,7 +50,7 @@ Polar<FloatType> make_polar(frd::PolarData<FloatType> const& polarData, FloatTyp
     Polar<FloatType> polar;
     polar.reserve(polarData.size());
     for (auto frdList : polarData) {
-        auto value = findFreq(frdList, frequencyHz);
+        auto value = frd::findFreq(frdList, frequencyHz);
         if (value != frdList.end()) {
             auto valueToInsert = std::make_pair(value->dBSPL, value->phaseDeg * toRadians);
             polar.push_back(valueToInsert);
@@ -125,59 +125,132 @@ std::vector<FloatType> convert_to_spl(std::vector<std::complex<FloatType>> const
     return spl;
 }
 
-// SoundSource is the acoustic model used by the calculator
+// SoundSource is the acoustic model of the loudspeaker used by the calculator
+// Its an immutable POD type,
 template<typename FloatType>
 struct SoundSource
 {
-    SoundSource(Polar<FloatType> const* polar)
-    : acousticCentre({0.f, 0.f}), polar(polar), polarity(1), angle(0)
-    { }
-
-    std::pair<FloatType, FloatType> acousticCentre;
-
-    void reversePolarity()
-    {
-        polarity = -1;
+    static SoundSource<FloatType> create  ( std::pair<FloatType, FloatType> acousticCentre,
+                                            Polar<FloatType> const* polar,
+                                            FloatType angle) {
+        return SoundSource<FloatType>(acousticCentre, polar, angle, 1.f);
     }
+
+    static SoundSource<FloatType> createReversePolarity (  std::pair<FloatType, FloatType> acousticCentre,
+                                                Polar<FloatType> const* polar,
+                                                FloatType angle) {
+        return SoundSource<FloatType>(acousticCentre, polar, angle, -1.f);
+    }
+
+    const std::pair<FloatType, FloatType> acousticCentre;
     Polar<FloatType> const* polar;
-    FloatType polarity;
-    FloatType angle;
+    const FloatType angle;
+    const FloatType polarity;
+
+private:
+    explicit SoundSource(std::pair<FloatType, FloatType> acousticCentre,
+                         Polar<FloatType> const* polar,
+                         FloatType angle,
+                         FloatType polarity) :
+                         acousticCentre (acousticCentre),
+                         polar (polar),
+                         angle (angle),
+                         polarity (polarity) {}
 };
 
-// ElementType defines a loudspeaker sku
+// LineArray defines an array of homogeneous elements and models
+// their mechanical properties and rigging.
+// LineArray provides the method createSoundSources()
+// to make the data structure the ffc needs
 template<typename FloatType>
-struct ElementType
+struct LineArray
 {
-    ElementType(Polar<FloatType> const& polar, FloatType height, FloatType depth, std::vector<FloatType> validSplayAngles) : 
-        polar(polar),
-        height(height), 
-        depth(depth), 
-        validSplayAngles(validSplayAngles)
+    LineArray() :
+    polar (nullptr),
+    elementHeight (0.3),
+    elementDepth  (0.4),
+    validSplayAngles_ ({FloatType(0)}),
+    inverted (false)
     { }
 
-    Polar<FloatType> const& polar;
-    const FloatType height;
-    const FloatType depth;
-    const std::vector<FloatType> validSplayAngles;
-};
+    Polar<FloatType> const* polar;
+    FloatType elementHeight;
+    FloatType elementDepth;
 
-// ElementState models the state of rigging hardware etc
-template<typename FloatType>
-struct ElementState
-{
-    ElementState(ElementType<FloatType> const& model) : 
-        splayAngle(FloatType(0)), 
-        splayInverted(false),
-        source({model.polar}),
-        model(model)
-    { }
+    bool setValidSplayAngles(std::vector<FloatType> angles) {
+        if (angles.size() == 0) return false;
+        validSplayAngles_ = angles;
+        return true;
+    }
 
-    FloatType splayAngle;
-    std::pair<FloatType, FloatType> topRiggingXY;
-    std::pair<FloatType, FloatType> bottomRiggingXY;
-    bool splayInverted;
-    SoundSource<FloatType> source;
-    ElementType<FloatType> &model;
+    // non-copyable (use boost::noncopyable?)
+    LineArray<FloatType>& operator=(const LineArray<FloatType>&) = delete;
+    LineArray<FloatType>(const LineArray<FloatType>&) = delete;
+
+    // Element models the state of rigging hardware etc
+    struct Element
+    {
+        Element (LineArray<FloatType> const& lineArray) :
+                splayAngle(lineArray.validSplayAngles()[0])
+        { }
+
+        FloatType splayAngle;
+        std::pair<FloatType, FloatType> topRiggingXY;
+        std::pair<FloatType, FloatType> bottomRiggingXY;
+        struct Geometry {
+            std::pair<FloatType, FloatType> rotationPoint;
+            std::pair<FloatType, FloatType> xy;
+            std::pair<FloatType, FloatType> hw;
+            FloatType angleSum;
+        };
+    };
+    std::vector<Element> elements;
+
+    const std::vector<FloatType>& validSplayAngles() const {
+        return validSplayAngles_;
+    }
+
+    std::vector<typename Element::Geometry> createGeometry() const {
+        std::vector<typename Element::Geometry> gs;
+        FloatType angleAccumulator = 0;
+        for (const auto &e : elements) {
+            typename Element::Geometry g;
+            g.xy = {e.topRiggingXY.first - elementDepth,
+                    e.topRiggingXY.second - (inverted ? elementHeight : 0.f)};
+            g.hw = {elementDepth, elementHeight};
+            g.rotationPoint = inverted ? e.topRiggingXY : std::make_pair(e.topRiggingXY.first, e.topRiggingXY.second + elementHeight);
+            if (inverted) {
+                angleAccumulator += e.splayAngle;
+                g.angleSum = angleAccumulator;
+            } else {
+                g.angleSum = angleAccumulator;
+                angleAccumulator += e.splayAngle;
+            }
+            gs.push_back(g);
+        }
+        return gs;
+    }
+
+    // creates the data structure needed by the calculator
+    std::vector<SoundSource<FloatType>> createSoundSources()
+    {
+        std::vector<SoundSource<FloatType>> soundSources;
+        auto angleAccumulator = FloatType(0);
+        for (const auto& e : elements)
+        {
+            FloatType x = e.topRiggingXY.first  + e.bottomRiggingXY.first  / FloatType(2);
+            FloatType y = e.topRiggingXY.second + e.bottomRiggingXY.second / FloatType(2);
+
+            angleAccumulator += e.splayAngle;
+
+            // angle is going to be an issue, need to accumulate them through the array
+            soundSources.push_back(SoundSource<FloatType>::create({x, y}, polar, angleAccumulator));
+        }
+        return soundSources;
+    }
+private:
+    std::vector<FloatType> validSplayAngles_;
+    bool inverted;
 };
 
 template <typename FloatType>                                                   
@@ -193,7 +266,7 @@ FloatType degreesToRadians(FloatType degrees) {
 template<typename FloatType>
 struct FreeFieldCalculator
 {
-    FreeFieldCalculator (int numThreads, std::vector<SoundSource<FloatType>*> const& sources, Constants<FloatType> const& constants) 
+    FreeFieldCalculator (int numThreads, std::vector<SoundSource<FloatType>> const& sources, Constants<FloatType> const& constants)
     : stop (false)
     , numThreads(numThreads)
     , sources (sources)
@@ -209,7 +282,7 @@ struct FreeFieldCalculator
     // }
 
     // index_to_xy returns x,y in metres from the origin
-    std::pair<FloatType, FloatType> index_to_xym(int index, Constants<FloatType> const& c) {
+    std::pair<FloatType, FloatType> index_to_xym(long index, Constants<FloatType> const& c) {
         auto y_px =  + index / c.width_px;
         auto x_px = index % c.width_px;
         return std::make_pair(c.XYM.first + x_px * c.m_per_pixel, c.XYM.second + y_px * c.m_per_pixel);
@@ -250,21 +323,20 @@ private:
     void calculateInThread(typename Result::iterator start, typename Result::iterator startOfRange, typename Result::iterator endOfRange)
     {
         for (const auto& s : sources) {
-            if (!s) continue;
             for (auto pt = startOfRange; pt != endOfRange && !stop; ++pt) {
                 auto xym = index_to_xym(std::distance(start, pt), constants);
-                auto [attenuation_dB, wt, angle_rads] = calc_intermediate(s->acousticCentre, xym, constants);
-                auto spl_phase = interpolated(*s->polar, angle_rads + s->angle);
+                auto [attenuation_dB, wt, angle_rads] = calc_intermediate(s.acousticCentre, xym, constants);
+                auto spl_phase = interpolated(*s.polar, angle_rads + s.angle);
                 auto mag = convertSplToMag(spl_phase.first - attenuation_dB);
                 auto phase = spl_phase.second + wt;
-                *pt = *pt + std::polar(mag, phase) * s->polarity;
+                *pt = *pt + std::polar(mag, phase) * s.polarity;
             }
         }
     }
 
     std::atomic<bool> stop;
     int numThreads;
-    std::vector<SoundSource<FloatType>*> const& sources;
+    std::vector<SoundSource<FloatType>> const& sources;
     Constants<FloatType> const& constants;
 };
 

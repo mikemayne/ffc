@@ -1,6 +1,8 @@
 #include "ffc.h"
 #include "frd/frd.h"
 
+#pragma once
+
 // LineArray defines an array of homogeneous elements and models
 // their mechanical properties and rigging.
 // LineArray provides the method createSoundSources()

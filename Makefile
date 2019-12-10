@@ -86,7 +86,7 @@ libgtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-ffc_test.o : ./ffc_test.cpp ffc.h $(GTEST_HEADERS)
+ffc_test.o : ./ffc_test.cpp ffc.h linearray.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
 
 ffc_test : ffc_test.o $(GTEST_LIBS)

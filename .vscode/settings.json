@@ -70,6 +70,16 @@
         "codecvt": "cpp",
         "stack": "cpp",
         "thread": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "bit": "cpp",
+        "clocale": "cpp",
+        "condition_variable": "cpp",
+        "queue": "cpp",
+        "cinttypes": "cpp"
     }
 }

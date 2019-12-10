@@ -43,9 +43,12 @@ struct LineArray
         splayAngle(splayAngle)
         { }
 
-        FloatType splayAngle;
+        FloatType splayAngle; // this enclosures splay angle
+        FloatType cumulativeAngle; // the difference between vertical and this enclosure.
         std::pair<FloatType, FloatType> topRiggingXY;
         std::pair<FloatType, FloatType> bottomRiggingXY;
+        const FloatType height;
+        const FloatType width;
     };
     std::vector<Element> elements;
 
@@ -85,6 +88,7 @@ struct LineArray
         for (auto &e : elements) {
             e.topRiggingXY = xyAccumulator;
             angleAccumulator += e.splayAngle;
+            e.cumulativeAngle = angleAccumulator;
             xyAccumulator.first -= elementHeight * std::sin(angleAccumulator * toRadians);
             xyAccumulator.second -= elementHeight * std::cos(angleAccumulator * toRadians);
             std::cout << "xyAccumulator " << xyAccumulator.first << ", " << xyAccumulator.second << " angle " << angleAccumulator << "deg" << std::endl;

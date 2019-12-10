@@ -47,8 +47,6 @@ struct LineArray
         FloatType cumulativeAngle; // the difference between vertical and this enclosure.
         std::pair<FloatType, FloatType> topRiggingXY;
         std::pair<FloatType, FloatType> bottomRiggingXY;
-        const FloatType height;
-        const FloatType width;
     };
     std::vector<Element> elements;
 

@@ -293,21 +293,26 @@ namespace {
 
         EXPECT_NEAR(la.elements[0].topRiggingXY.first, 0.f, 1e-3f);
         EXPECT_NEAR(la.elements[0].topRiggingXY.second, 0.f, 1e-3f);
+        EXPECT_NEAR(la.elements[0].cumulativeAngle, 0.f, 1e-3f);
 
         EXPECT_NEAR(la.elements[1].topRiggingXY.first, 0.f, 1e-3f);
         EXPECT_NEAR(la.elements[1].topRiggingXY.second, -0.1f, 1e-3f);
+        EXPECT_NEAR(la.elements[1].cumulativeAngle, 0.f, 1e-3f);
 
         EXPECT_NEAR(la.elements[2].topRiggingXY.first, 0.f, 1e-3f);
         EXPECT_NEAR(la.elements[2].topRiggingXY.second, -0.2f, 1e-3f);
+        EXPECT_NEAR(la.elements[2].cumulativeAngle, 0.f, 1e-3f);
 
         la.elements[0].splayAngle = 5.f;
         la.recalc({0.f, 0.f});
 
         EXPECT_NEAR(la.elements[0].topRiggingXY.first, 0.f, 1e-3f);
         EXPECT_NEAR(la.elements[0].topRiggingXY.second, 0.f, 1e-3f);
+        EXPECT_NEAR(la.elements[0].cumulativeAngle, 5.f, 1e-3f);
 
-        EXPECT_NEAR(la.elements[0].bottomRiggingXY.first, -0.0087f, 1e-3f);
-        EXPECT_NEAR(la.elements[0].bottomRiggingXY.second, -0.09961, 1e-3f);
+        EXPECT_NEAR(la.elements[1].bottomRiggingXY.first, -0.0087f, 1e-3f);
+        EXPECT_NEAR(la.elements[1].bottomRiggingXY.second, -0.09961, 1e-3f);
+        EXPECT_NEAR(la.elements[1].cumulativeAngle, 5.f, 1e-3f);
          
         // EXPECT_NEAR(geometry[2].topRiggingXY.first, 0.f, 1e-3f);
         // EXPECT_NEAR(geometry[2].topRiggingXY.second, 0.2f, 1e-3f);

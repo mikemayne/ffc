@@ -317,4 +317,16 @@ namespace {
         // EXPECT_NEAR(geometry[2].topRiggingXY.first, 0.f, 1e-3f);
         // EXPECT_NEAR(geometry[2].topRiggingXY.second, 0.2f, 1e-3f);
     }
+
+    TEST(LineArrayTest, resize_linearray) {
+        LineArray<float> la {3};
+        la.elements[0].splayAngle = 1;
+        la.elements[1].splayAngle = 2;
+        la.elements[2].splayAngle = 3;
+
+        EXPECT_NEAR(la.elements[2].splayAngle, 3.f, 1e-3f);
+        la.setNumElements(4);
+        EXPECT_NEAR(la.elements[2].splayAngle, 3.f, 1e-3f);
+        EXPECT_NEAR(la.elements[3].splayAngle, 0.f, 1e-3f);
+    }
 }

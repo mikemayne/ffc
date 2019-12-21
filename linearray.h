@@ -22,6 +22,11 @@ struct LineArray
             elements.push_back({validSplayAngles_[0]});
     }
 
+    void setNumElements(int N)
+    {
+        elements.resize(N, FloatType(0));
+    }
+
     ffc::Polar<FloatType> const* polar;
     FloatType elementHeight;
     FloatType elementDepth;
@@ -108,8 +113,6 @@ struct LineArray
             FloatType y = e.topRiggingXY.second + e.bottomRiggingXY.second / FloatType(2);
 
             angleAccumulator += e.splayAngle;
-
-            // angle is going to be an issue, need to accumulate them through the array
             soundSources.push_back(ffc::SoundSource<FloatType>::create({x, y}, polar, angleAccumulator));
         }
         return soundSources;

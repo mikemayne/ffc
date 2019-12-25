@@ -86,18 +86,17 @@ struct LineArray
     // }
 
     // 
-    void recalc(std::pair<FloatType, FloatType> originXY) {
+    void recalc(std::pair<FloatType, FloatType> XY) {
         const auto toRadians = M_PI / 180.0;
         FloatType angleAccumulator = arrayAimAngle;
-        std::pair<FloatType, FloatType> xyAccumulator = {FloatType(0), FloatType(0)};
         for (auto &e : elements) {
-            e.topRiggingXY = xyAccumulator;
+            e.topRiggingXY = XY;
             angleAccumulator += e.splayAngle;
             e.cumulativeAngle = angleAccumulator;
-            xyAccumulator.first -= elementHeight * std::sin(angleAccumulator * toRadians);
-            xyAccumulator.second -= elementHeight * std::cos(angleAccumulator * toRadians);
-            std::cout << "xyAccumulator " << xyAccumulator.first << ", " << xyAccumulator.second << " angle " << angleAccumulator << "deg" << std::endl;
-            e.bottomRiggingXY = xyAccumulator;
+            XY.first -= elementHeight * std::sin(angleAccumulator * toRadians);
+            XY.second -= elementHeight * std::cos(angleAccumulator * toRadians);
+            std::cout << "xyAccumulator " << XY.first << ", " << XY.second << " angle " << angleAccumulator << "deg" << std::endl;
+            e.bottomRiggingXY = XY;
         }
     }
 

@@ -237,7 +237,7 @@ namespace {
         c.frequencyHz = 1000;
         c.width_px = 60;
         c.height_px = 1;
-        c.XYM = {0,0};
+        c.originXYM = {0,0};
 
         ffc::Polar<float> p;
         auto spl = 98.f;
@@ -328,5 +328,13 @@ namespace {
         la.setNumElements(4);
         EXPECT_NEAR(la.elements[2].splayAngle, 3.f, 1e-3f);
         EXPECT_NEAR(la.elements[3].splayAngle, 0.f, 1e-3f);
+    }
+
+    TEST(LineArrayTest, position_linearray) {
+        LineArray<float> la {1};
+        la.recalc({10.f, 15.f});
+        EXPECT_NEAR(la.elements[0].topRiggingXY.first, 10.f, 1e-3f);
+        EXPECT_NEAR(la.elements[0].topRiggingXY.second, 15.f, 1e-3f);
+        
     }
 }

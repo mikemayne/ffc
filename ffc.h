@@ -26,7 +26,7 @@ struct Constants
     FloatType speed_of_sound_mps;
     int width_px;
     int height_px;
-    std::pair<FloatType, FloatType> XYM; // origin in M (bad member name!)
+    std::pair<FloatType, FloatType> originXYM; // origin X Y coordinates in M
 };
 
 // Polar holds magnitude and phase in RADIANS for a single frequency.  
@@ -190,7 +190,7 @@ struct FreeFieldCalculator
     std::pair<FloatType, FloatType> index_to_xym(long index, Constants<FloatType> const& c) {
         auto y_px =  + index / c.width_px;
         auto x_px = index % c.width_px;
-        return std::make_pair(c.XYM.first + x_px * c.m_per_pixel, c.XYM.second + y_px * c.m_per_pixel);
+        return std::make_pair(c.originXYM.first + x_px * c.m_per_pixel, c.originXYM.second + y_px * c.m_per_pixel);
     }
 
     // calculate will block until calculation complete
